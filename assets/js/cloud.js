@@ -36,7 +36,7 @@ export function drawCloud() {
     let divide = 0;     // Variable que l'on va incrémenter 
     
     for (let i = 0; i < times; i++) {
-        divide += canvas.width / times;
+        divide += Math.round(window.innerWidth / times);
         x.push(divide); // on ajoute au tableau la valeur incrémenté
     }
     
@@ -46,7 +46,7 @@ export function drawCloud() {
 
     // Fonction pour creer nos nuages 
 export function generateNuage () {
-
+    console.log(x)
     for (let i = 0; i < nuageCount; i++) { // creation d'un objet pour chaque nuage avec des caracteristique aléatoire
         nuages.push({
             x : x[Math.floor(Math.random()*x.length)],                      //position x de départ
