@@ -30,49 +30,47 @@ function resize() {
 // on lance la fonction a chaque rechargement de page
 resize();
 
-const nuageCount = Math.floor(window.innerWidth / 120);
-console.log(nuageCount)
-console.log(width)
+const nuageCount = Math.floor(window.innerWidth / 120); // on va creer un nombre de nuage proportionnel a la taille de la fenêttre
+const nuageImg = new Image(); // création d'une nouvelle image
+nuageImg.src = '/assets/image/nuage.png'; // on ajoute le lien de notre image
 let nuages = [];
 
 
-let nuage = new Image();
-nuage.src = '/assets/image/nuage.png';
+// CREATION DES NUAGES
+let times = 15;     // le nombre de fois que l'on va diviser l'axe X (pour avoir des positions différentes)
+let x = []          // initialisation d'un tableau vide qui va stocker les différentes positions
+let divide = 0;     // Variable que l'on va incrémenter 
 
-let nuageVitesse = 0.5;
-let x = 0;
-let y =  [50, 75, 100, 125, 140];
-let nuageSize = [100,125,150,175];
-let ramdomSize = nuageSize[Math.floor(Math.random()*nuageSize.length)];
-let ramdomY = y[Math.floor(Math.random()*y.length)];
-let blurDirection = 0.1;
+for (i = 0; i < times; i++) {
+    divide += canvas.width / times;
+    x.push(divide); // on ajoute au tableau la valeur incrémenté
+}
+console.log(x)
 
-for (i = 0; i < nuageCount; i++) {
+let y =  [10, 25, 50, 75, 100, 125, 140, 150, 160]; // un tableau contenant différente hauteur 
+let nuageSize = [100, 115, 125, 135, 150, 160, 175]; // différente taille de nuage
+vitesse = [0.5, -0.5, 0.6, -0.6, 0.7, -0.7] // différente vitesse
+
+// Fonction pour creer nos nuages 
+function generateNuage () {
+for (i = 0; i < nuageCount; i++) { // creation d'un objet pour chaque nuage avec des caracteristique aléatoire
     nuages.push({
-        x : 0,
-        y : ramdomY,
-        vitesse : Math.random() < 0.5 ? 0.5 : -0.5,
+        x : x[Math.floor(Math.random()*x.length)],                      //position x de départ
+        y : y[Math.floor(Math.random()*y.length)],                      // position y
+        Size : nuageSize[Math.floor(Math.random()*nuageSize.length)],   // taile du nuage
+        vitesse : vitesse[Math.floor(Math.random()*vitesse.length)] // vitesse et direction du nuage
     })
 }
+}
+generateNuage(); // generation des nuages au (re)chargement de page
 
-  function draw() {
+console.log(nuages)
+
+    function draw() {
     
     drawBackGround();
     drawSun();
-
-    ctx.drawImage(nuage, x, ramdomY, ramdomSize, ramdomSize); // 
-
-    // Faire bouger les nuages
-    x += nuageVitesse;
-
-    // Si les nuages dépassent la largeur du canvas, les ramener à gauche
-    if (x > canvas.width && nuageVitesse > 0) {
-        x = -150;
-        ramdomY = y[Math.floor(Math.random() * y.length)];
-        ramdomSize = nuageSize[Math.floor(Math.random() * nuageSize.length)];
-    }
-
-    
+    drawCloud();
 
 
     // Redessiner à chaque frame (le nuage sera dessiné avec une position différente pour donner une impression d'avancer)
@@ -88,7 +86,7 @@ let linearGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Effet radial lumineux
-    let radialGradient = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, canvas.width / 2);
+    let radialGradient = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 6, canvas.height / 2, canvas.width / 2);
     radialGradient.addColorStop(0, 'rgba(41, 196, 255, 0.2)');
     radialGradient.addColorStop(1, 'transparent');
     ctx.fillStyle = radialGradient;
@@ -99,6 +97,7 @@ let linearGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
 // Soleil
 
 let blur = 0; // on déclare une variable blur pour gerer l'animation
+let blurDirection = 0;
 
 function drawSun() {
 
@@ -111,8 +110,9 @@ if(blur > 45) {
 }
 
 blur += blurDirection; // on ajoute a blur 0.05 ou -0.05 a chaque frame 
-ctx.beginPath();
-ctx.arc(100, 100, 50, 0, Math.PI * 2);
+
+ctx.beginPath();        
+ctx.arc(180, 100, 50, 0, Math.PI * 2);  // déssin du soleil
 ctx.fillStyle = "rgb(255, 253, 128)";
 ctx.strokeStyle = 'rgb(255, 254, 171)';
 ctx.shadowColor = 'rgb(255, 254, 171)';
@@ -126,9 +126,32 @@ ctx.shadowBlur = 0; // on reinitialise le shadowblur pour eviter qu'il aille sur
 
 }
 // Lancer l'animation lorsque l'image est chargée
-nuage.onload = function() {
+nuageImg.onload = function() {
     draw();
 };
 
+
+function drawCloud() {
+
+nuages.forEach(nuage => {
+
+    ctx.drawImage(nuageImg, nuage.x, nuage.y, nuage.Size, nuage.Size);
+
+    nuage.x += nuage.vitesse;
+     // Faire bouger les nuages
+    
+    //  Si les nuages dépassent la largeur droite du canvas, les ramener à gauche
+if (nuage.x > canvas.width && nuage.vitesse > 0) {
+    nuage.x = -150;
+
+}
+    // et vice-versa
+if (nuage.x < -canvas.width && nuage.vitesse < 0) {
+    nuage.x = window.innerWidth;
+
+}
+
+})
+}
 
 }
